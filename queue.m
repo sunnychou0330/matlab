@@ -8,7 +8,7 @@ mu         = 6;  % service rate
 
 arr_mean = 1 / lambda; % average arrival time
 ser_mean = 1 / mu;     % average service time
-arr_num  = round(Total_time * lambda * 2); % number of customer
+arr_num  = round(Total_time * lambda * 2); % max number of customer
 
 % events(1,:) => arrival time
 % events(2,:) => service time
