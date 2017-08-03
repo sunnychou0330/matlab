@@ -1,0 +1,23 @@
+function figGA(profile, res, optimal)
+MI = profile.MI;
+Best  = res.Best;
+Worst = res.Worst;
+op(1:MI) = optimal;
+Xsc = [1:MI];
+
+figure();
+plot(Xsc, res.BestEvo, Xsc, res.MeanEvo, Xsc, op);
+xlim([1,MI+1]);
+ylim([Worst * 0.9, optimal * 1.1]);
+
+title(['GA Runs:', num2str(profile.NR), '   ', ... 
+    'MI:', num2str(profile.MI), '   ', ... 
+    'PS:', num2str(profile.PS), '   ', ... 
+    'CR:', num2str(profile.CR), '   ', ... 
+    'MR:', num2str(profile.MR), '   ', ... 
+    'Best:', num2str(Best), '   ', ... 
+    'Optimal:', num2str(optimal), '   ', ... 
+    'avg time:', res.Time]);
+xlabel('No. of Iterations');
+ylabel('fitness');
+legend('Best run values','Average run values', 'optimal', 'Location','SouthEast');

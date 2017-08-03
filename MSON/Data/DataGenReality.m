@@ -4,8 +4,8 @@ clc;
 data = load('RealDataSet.mat');
 data = data.DataSet;
 
-NP = 20;      % Number of mobile service provider
-NT = 15;      % Number of tasks in a composition request
+NP = 100;      % Number of mobile service provider
+NT = 100;      % Number of tasks in a composition request
 TP = 0;       % Probability of service
 
 for i=1:NT

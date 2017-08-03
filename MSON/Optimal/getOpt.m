@@ -1,52 +1,63 @@
-function [opt, rt] = getOpt(datafile)
-    load(datafile);
+function [optimal, time]=getOpt(KH_profile)    
+    load(KH_profile.datafile);
+    NT = KH_profile.Tasks;
+    NP = KH_profile.Providers;
+    global bestQoS;
+    global bestRt;
+    global bestPath;
+    global currentBest;
+    bestPath = '';
+    bestQoS = 0;
+    bestRt = 0;
+    currentBest = zeros(1,NT);
     global services;
-
-    NP = numel(services);
-    opt = 0;
-    rt  = 0;
-
-    for i=1:NP
-        NT = numel(services{i});
-        max = 0;
-        index = 0;
-        for j=1:NT
-            if services{i}{j}.qos > max
-                max = services{i}{j}.qos;
-                index = j;
-            end
-        end
-        opt = opt + max;
-        rt  = rt + services{i}{index}.rt;
-    end
-    opt
-    rt
+    tic;
+    back(1, 0, 0, 'path: ', NT, NP);
+    time = toc;
+    optimal = bestQoS;
+    % bestPath
+    % bestQoS
+    % bestRt
+    % currentBest;
+    clear global;
 end
 
-
-
-function [rt, qos]=itr(task_index, provider_index, current_rt, current_qos, path)
-    path
+function back(task_index, current_qos, current_rt, path, NT, NP)  
     global services;
+    global currentBest;
     
-    if task_index == 15
-        rt  = services{task_index}{provider_index}.rt;
-        qos = services{task_index}{provider_index}.qos;
+    if task_index ~= 1
+        if currentBest(task_index-1) == 0
+            currentBest(task_index-1) = current_qos;
+        else
+            if currentBest(task_index-1) < current_qos
+                currentBest(task_index-1) = current_qos;
+            else
+                return;
+            end
+        end
+    end
+    
+    if task_index > NT        
+        global bestQoS;
+        global bestRt;
+        global bestPath;
+        if current_qos > bestQoS
+            bestQoS  = current_qos;
+            bestPath = path;
+            bestRt   = current_rt;
+        end
         return;
     end
     
-    if task_index == 0
-        rt_p = 0; qos_p = 0;
-    else        
-        rt_p  = current_rt + services{task_index}{provider_index}.rt;
-        qos_p = current_qos + services{task_index}{provider_index}.qos;
-    end
-    
-    rt = 0; qos = 0;
-    for i=1:20
-        [rt_t, qos_t] = itr(task_index + 1, i, rt_p, qos_p, [path, ' ', num2str(i)]);
-        if qos_t > qos
-            qos = qos_t; rt = rt_t;
+    for i=1:NP
+        current_qos = current_qos + services{task_index}{i}.qos;
+        current_rt  = current_rt + services{task_index}{i}.rt;
+        if current_rt > 1000
+            return;
         end
-    end    
+        back(task_index + 1, current_qos, current_rt, [path, ' ', num2str(i)], NT, NP);
+        current_qos = current_qos - services{task_index}{i}.qos;
+        current_rt  = current_rt - services{task_index}{i}.rt;
+    end
 end

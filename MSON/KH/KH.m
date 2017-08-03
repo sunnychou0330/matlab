@@ -11,42 +11,46 @@
 function result = KH(profile)
 
 %% setup
-NR = profile.NR;
-NK = profile.NK;
-MI = profile.MI;
-C_flag  = profile.C_flag;
-Vf = profile.Vf;
-Dmax = profile.Dmax;
-Nmax = profile.Nmax;
+NR       = profile.NR;
+NK       = profile.NK;
+MI       = profile.MI;
+C_flag   = profile.C_flag;
+Vf       = profile.Vf;
+Dmax     = profile.Dmax;
+Nmax     = profile.Nmax;
 datafile = profile.datafile;
+NT       = profile.Tasks;
+NP       = profile.Providers;
 
 load(datafile);
-NP = numel(services); % Number of Parameter(s)
 
 % Bounds (Normalize search space in case of highly imbalanced search space)
-UB = []; LB = [];
-for i=1:NP
-    UB = [UB; numel(services{i})];
-    LB = [LB; 1];
-end
+% NT = numel(services);
+% UB = []; LB = [];
+% for i=1:numel(services)
+%     UB = [UB; numel(services{i})];
+%     LB = [LB; 1];
+% end
+% UB = UB';
+% LB = LB';
 
-UB = UB';
-LB = LB';
+UB = NP*ones(1,NT);
+LB = ones(1,NT);
 
 % Scale Factor
 Dt = mean(abs(UB-LB))/2;
-F = zeros(NP,NK); D = zeros(1,NK); N = zeros(NP,NK); %R = zeros(NP,NK);
+F = zeros(NT,NK); D = zeros(1,NK); N = zeros(NT,NK); %R = zeros(NT,NK);
 
 %% Optimization & Simulation
 tic;
 for nr = 1:NR
     %Initial Krills positions
-    for z1 = 1:NP
+    for z1 = 1:NT
         X(z1,:) = LB(z1) + (UB(z1) - LB(z1)).*rand(1,NK);
     end
     
     for z2 = 1:NK
-        K(z2)=fitness(X(:,z2), services);
+        K(z2)=fitness(X(:,z2), services, NT);
     end
     
     Kib=K;
@@ -56,12 +60,12 @@ for nr = 1:NR
     
     for j = 1:MI 
         % Virtual Food
-        for ll = 1:NP;
+        for ll = 1:NT;
             Sf(ll) = (sum(X(ll,:)./K));
         end
         Xf(:,j) = Sf./(sum(1./K)); %Food Location       
         Xf(:,j) =findlimits(Xf(:,j)',LB,UB,Xgb(:,j,nr)');% Bounds Checking
-        Kf(j) = fitness(Xf(:,j), services);
+        Kf(j) = fitness(Xf(:,j), services, NT);
         if 2<=j
             if Kf(j-1)<Kf(j)
                 Xf(:,j) = Xf(:,j-1);
@@ -125,7 +129,7 @@ for nr = 1:NR
             F(:,i) = w*F(:,i)+Vf*(Beta_b+Beta_f);
             
             % % % % % % % % % % % % % Physical Diffusion % % % % % % % % %
-            D = Dmax*(1-j/MI)*floor(rand+(K(i)-Kgb(j,nr))/Kw_Kgb)*(2*rand(NP,1)-ones(NP,1));
+            D = Dmax*(1-j/MI)*floor(rand+(K(i)-Kgb(j,nr))/Kw_Kgb)*(2*rand(NT,1)-ones(NT,1));
             
             % % % % % % % % % % % % % Motion Process % % % % % % % % % % %
             DX = Dt*(N(:,i)+F(:,i));           
@@ -133,18 +137,19 @@ for nr = 1:NR
             % % % % % % % % % % % % % Crossover % % % % % % % % % % % % %
             if C_flag ==1
                 C_rate = 0.8 + 0.2*(K(i)-Kgb(j,nr))/Kw_Kgb;
-                Cr = rand(NP,1) < C_rate ;
+                Cr = rand(NT,1) < C_rate ;
                 % Random selection of Krill No. for Crossover
-                NK4Cr = round(NK*rand+.5);  
+                NK4Cr = round(NK*rand+.5);
                 % Crossover scheme
                 X(:,i)=X(:,NK4Cr).*(1-Cr)+X(:,i).*Cr;
+                % X(:,i)=Kgb(j,nr).*(1-Cr)+X(:,i).*Cr;
             end
             
             % Update the position
             X(:,i)=X(:,i)+DX;
             X(:,i)=findlimits(X(:,i)',LB,UB,Xgb(:,j,nr)'); % Bounds Checking
 
-            K(i)=fitness(X(:,i), services);
+            K(i)=fitness(X(:,i), services, NT);
             if K(i)<Kib(i)
                 Kib(i)=K(i);
                 Xib(:,i)=X(:,i);
@@ -161,12 +166,13 @@ for nr = 1:NR
         end
     end
 end
-time = [num2str(toc/NR), ' s'];
+time = toc/NR;
 
 %% return 
+Kgb(1,:) = [];    % remove first population
 [Best, Best_No] = min(Kgb(end,:));
 result.Best = 1/Best;
-result.Mean = mean(Kgb(end,:));
+result.Mean = 1/mean(Kgb(end,:));
 result.Worst = 1/max(Kgb(end,:));
 result.Standard_Deviation = std(Kgb(end,:));
 result.Time = time;

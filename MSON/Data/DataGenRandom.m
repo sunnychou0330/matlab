@@ -2,8 +2,8 @@ clear;
 clc;
 
 
-NP = 20;      % Number of mobile service provider
-NT = 15;      % Number of tasks in a composition request
+NP = 50;      % Number of mobile service provider
+NT = 50;      % Number of tasks in a composition request
 TP = 0;       % Probability of service
 
 providers = [];

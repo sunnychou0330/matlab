@@ -2,6 +2,8 @@ function result = GA(profile)
 load(profile.datafile);
 inputs = services;
 target = 0;
+NT = profile.Tasks;
+NP = profile.Providers;
 
 % GA config
 gaConfig = fsf.ga.Configuration();
@@ -20,18 +22,25 @@ gaOps = fsf.ga.OperatorSet(...
                     fsf.ga.operators.replacement.Elitism());
 
 % Factory to create individuals
-problem_dimensions = size(inputs, 2);
-UB = []; LB = [];
-for i=1:problem_dimensions
-    UB = [UB; numel(inputs{i})];
-    LB = [LB; 1];
-end
-UB = UB'; LB = LB';
+% problem_dimensions = size(inputs, 2);
+% UB = []; LB = [];
+% for i=1:problem_dimensions
+%     UB = [UB; numel(inputs{i})];
+%     LB = [LB; 1];
+% end
+% UB = UB'; LB = LB';
+
+UB = NP*ones(1,NT);
+LB = ones(1,NT);
+
+problem_dimensions = NT;
+
+
 gaIndFactArgs = MobileServiceComposition.features.IndividualFactoryArgs(problem_dimensions, LB, UB);
 gaIndFact = MobileServiceComposition.features.IndividualFactory(gaIndFactArgs);
 
 % Fitness evaluator
-gaFitEvaluator = MobileServiceComposition.features.FitnessEvaluator(inputs, target);
+gaFitEvaluator = MobileServiceComposition.features.FitnessEvaluator(inputs, target, NT);
 
 ga = fsf.ga.GeneticAlgorithm(gaConfig, gaOps, gaFitEvaluator, gaIndFact);
 
@@ -40,7 +49,7 @@ ga = fsf.ga.GeneticAlgorithm(gaConfig, gaOps, gaFitEvaluator, gaIndFact);
 
 tic;
 [gaResult, Kgb] = ga.Execute();
-time = [num2str(toc/gaConfig.Runs), ' s'];
+time = toc/gaConfig.Runs;
 
 %% return 
 [Best, Best_No] = max(Kgb(end,:));

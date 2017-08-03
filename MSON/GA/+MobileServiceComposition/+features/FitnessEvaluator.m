@@ -5,12 +5,13 @@ classdef FitnessEvaluator < fsf.ga.FitnessEvaluator
     properties
         Inputs; % Inputs of the problem
         Target; % Target of the problem
+        NT;     % Numbers of Tasks;
         NumChannels; % Number of channels (variables) of the problem
         NumMeasures; % Number of measures (samples) of the problem
     end
     
     methods
-        function this = FitnessEvaluator(inputs, target)
+        function this = FitnessEvaluator(inputs, target, NT)
             % Creates a sample.features.FitnessEvaluator instance.
             %
             % @param inputs: The inputs of the regression problem.
@@ -21,6 +22,7 @@ classdef FitnessEvaluator < fsf.ga.FitnessEvaluator
             this@fsf.ga.FitnessEvaluator('greater_best');
             this.Inputs = inputs;
             this.Target = target;
+            this.NT = NT;
             [this.NumMeasures, this.NumChannels] = size(inputs);
             % this.problem_dimensions = size(inputs, 2);
         end 
@@ -41,7 +43,7 @@ classdef FitnessEvaluator < fsf.ga.FitnessEvaluator
             features = theIndividual.Features;
             inputs   = this.Inputs;
             agg = 0;
-            for i=1:this.NumChannels
+            for i=1:this.NT
                 agg = agg + inputs{i}{features(i)}.qos;
             end
             fitness = fsf.ga.Fitness(agg);
