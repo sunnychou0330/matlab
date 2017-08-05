@@ -161,13 +161,13 @@ function result = PSO(profile)
 
     %% Results
     [Best, Best_No] = min(Kgb(end,:));
-    result.Best = 1/Best;
-    result.Mean = 1/mean(Kgb(end,:));
-    result.Worst = 1/max(Kgb(end,:));
+    result.Best = Best;
+    result.Mean = mean(Kgb(end,:));
+    result.Worst = max(Kgb(end,:));
     result.Standard_Deviation = std(Kgb(end,:));
     result.Time = time;
-    result.BestEvo = 1./Kgb(:,Best_No);
-    result.MeanEvo = 1./mean(Kgb');
+    result.BestEvo = Kgb(:,Best_No);
+    result.MeanEvo = mean(Kgb');
 
     %% figure;
     % plot(BestCost,'LineWidth',2);

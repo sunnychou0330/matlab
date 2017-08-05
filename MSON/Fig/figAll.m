@@ -44,8 +44,8 @@ function figAll(MI, GA_res, KH_res, PSO_res, optimal, interval, best)
     figure();
     plot(x, y1, '-d', x, y2, '-*', x, y3, '-^', x, y4, 'LineWidth', 0.8);
     % plot(x, y1, x, y2, x, y3, x, y4, 'LineWidth', 1);
-    xlim([10, MI]);
-    ylim([Worst * 0.9, optimal * 1.03]);
+    xlim([1, MI]);
+    % ylim([Worst * 0.9, optimal * 1.03]);
     xlabel('No. of Iterations');
     if best
         ylabel('Best fitness');
@@ -53,5 +53,5 @@ function figAll(MI, GA_res, KH_res, PSO_res, optimal, interval, best)
         ylabel('Average fitness');
     end
     
-    legend('KHMSC', 'GA','PSO', 'Brute-force', 'Location','SouthEast');
+    legend('KHMSC', 'GA','PSO', 'Brute-force', 'Location','NorthEast');
 end

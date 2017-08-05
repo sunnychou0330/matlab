@@ -2,34 +2,39 @@ function Dmax()
 clear all;
 clc;
 
-addpath('KH', 'Optimal', 'Data');
+addpath('../KH', '../Optimal', '../Data');
 
 %% setup
-KH_profile.datafile = 'Data/real-providers-20-tasks-15.mat';
-KH_profile.NR       = 50;
-KH_profile.NK       = 50;
-KH_profile.MI       = 50;
-KH_profile.C_flag   = 1;
-KH_profile.Vf       = 0.2;
-KH_profile.Dmax     = 0.2;
-KH_profile.Nmax     = 0.2;
+KH_profile.datafile   = 'Data/real-providers-100-tasks-100.mat';
+KH_profile.NR         = 10;
+KH_profile.NK         = 20;
+KH_profile.MI         = 50;
+KH_profile.C_flag     = 1;
+KH_profile.Vf         = 0.8;
+KH_profile.Nmax       = 0.3;
+KH_profile.Dmax       = 0.2;
+KH_profile.Tasks      = 15;
+KH_profile.Providers  = 20;
+
+since    = 1;
+to       = 300;
+interval = 3;
 
 %% experiment
-[optimal, opt_time] = getOpt(KH_profile.datafile);
+[optimal, opt_time] = getOpt(KH_profile);
 
 index = 1;
-for i=1:3:300
+for i=since:interval:to
     KH_profile.Dmax = i/100;
     KH_res = KH(KH_profile);
     y(index) = KH_res.Mean;
     index = index + 1;
 end
 
-x = (1:3:300)./100;
+x = (since:interval:to)./100;
 figure();
 plot(x, y, '-o');
 grid on
-ylim([12.3 13.2]);
 xlabel('The maximum diffusion speed');
 ylabel('The average fitness');
 end

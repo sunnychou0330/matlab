@@ -9,8 +9,7 @@ function figKH(profile, res, optimal)
     op(1:MI) = optimal;
     Xsc = [1:MI];
     plot(Xsc, res.BestEvo, Xsc, res.MeanEvo, Xsc, op);
-    xlim([1,MI+1]);
-    ylim([Worst * 0.9, optimal * 1.05]);
+    xlim([1,MI]);
 
     title(['PSO Runs:', num2str(NR), '   ', ... 
         'MI:', num2str(MI), '   ', ... 

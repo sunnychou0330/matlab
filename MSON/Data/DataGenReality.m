@@ -16,17 +16,20 @@ end
 providers = [];
 for i=1:NP
     provider = struct('ProviderName', ['p', num2str(i)]);
-    ava = rand(1);
+    ava = 0.5*rand + 0.5;
     for j=1:NT
         if rand > TP
             q = CandidateService(j).QoS;
             index  = ceil(rand(1) * numel(q));
             rt = q(index);
             rt_p = ( max(q) - q(index) ) / ( max(q) - min(q) );
-            qos = ava * 0.5 + rt_p * 0.5;
-            provider.(['task', num2str(j)]).ava = ava;
+            
+            % turn positive attribute to negative attribute
+            provider.(['task', num2str(j)]).ava = 1 - ava;
             provider.(['task', num2str(j)]).rt  = rt;
-            provider.(['task', num2str(j)]).qos = qos;
+            % qos is an useless attribure, just classify whether provider i
+            % has service j
+            provider.(['task', num2str(j)]).qos = 1;
         else
             provider.(['task', num2str(j)]).qos = 0;
         end       

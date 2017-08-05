@@ -9,8 +9,8 @@ function figKH(profile, res, optimal)
     op(1:MI) = optimal;
     Xsc = [1:MI];
     plot(Xsc, res.BestEvo, Xsc, res.MeanEvo, Xsc, op);
-    xlim([1,MI+1]);
-    ylim([Worst * 0.9, optimal * 1.05]);
+    xlim([1,MI]);
+    % ylim([optimal * 0.9, Worst * 1.1]);
 
     title(['KH Runs:', num2str(NR), '   ', ... 
         'MI:', num2str(MI), '   ', ... 
@@ -20,5 +20,5 @@ function figKH(profile, res, optimal)
         'avg time:', res.Time]);
     xlabel('No. of Iterations');
     ylabel('fitness');
-    legend('Best run values','Average run values', 'optimal', 'Location','SouthEast');
+    legend('Best run values','Average run values', 'optimal', 'Location','NorthEast');
 end

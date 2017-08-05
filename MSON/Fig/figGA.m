@@ -7,8 +7,7 @@ Xsc = [1:MI];
 
 figure();
 plot(Xsc, res.BestEvo, Xsc, res.MeanEvo, Xsc, op);
-xlim([1,MI+1]);
-ylim([Worst * 0.9, optimal * 1.1]);
+xlim([1,MI]);
 
 title(['GA Runs:', num2str(profile.NR), '   ', ... 
     'MI:', num2str(profile.MI), '   ', ... 

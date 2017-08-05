@@ -19,7 +19,7 @@ classdef FitnessEvaluator < fsf.ga.FitnessEvaluator
             %
             % @return this: The sample.features.FitnessEvaluator instance.
 
-            this@fsf.ga.FitnessEvaluator('greater_best');
+            this@fsf.ga.FitnessEvaluator('lower_best');
             this.Inputs = inputs;
             this.Target = target;
             this.NT = NT;
@@ -39,14 +39,19 @@ classdef FitnessEvaluator < fsf.ga.FitnessEvaluator
             % if(this.NumChannels ~= (theIndividual.FactoryArgs.Dimensions))
             %    error('Matrix dimensions and individual feature selector size do not match');
             % end
-            
+
             features = theIndividual.Features;
-            inputs   = this.Inputs;
-            agg = 0;
+            services = this.Inputs;
+            % all sequence
+            rt = 0; ava = 1;
             for i=1:this.NT
-                agg = agg + inputs{i}{features(i)}.qos;
+                rt  = rt + services{i}{features(i)}.rt;
+                ava = ava * services{i}{features(i)}.ava;
             end
-            fitness = fsf.ga.Fitness(agg);
+            
+            % qos = ava / rt; positive
+            f = 0.5 * rt + 0.5 * (1 - ava);
+            fitness = fsf.ga.Fitness(f);
         end
     end    
 end

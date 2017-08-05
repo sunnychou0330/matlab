@@ -3,61 +3,57 @@ function [optimal, time]=getOpt(KH_profile)
     NT = KH_profile.Tasks;
     NP = KH_profile.Providers;
     global bestQoS;
-    global bestRt;
     global bestPath;
     global currentBest;
-    bestPath = '';
-    bestQoS = 0;
-    bestRt = 0;
-    currentBest = zeros(1,NT);
-    global services;
+    bestPath = [];
+    bestQoS = 99999999;
+    currentBest = 9999999*ones(1, NT+1);
+    
+    path = [];
+    
     tic;
-    back(1, 0, 0, 'path: ', NT, NP);
+    % back(services, path, 0, 1, NT, NP);
+    bfs(services, 1, path, NT, NP)
     time = toc;
+    
     optimal = bestQoS;
     % bestPath
     % bestQoS
-    % bestRt
-    % currentBest;
+    % currentBest
     clear global;
 end
 
-function back(task_index, current_qos, current_rt, path, NT, NP)  
-    global services;
-    global currentBest;
-    
-    if task_index ~= 1
-        if currentBest(task_index-1) == 0
-            currentBest(task_index-1) = current_qos;
-        else
-            if currentBest(task_index-1) < current_qos
-                currentBest(task_index-1) = current_qos;
-            else
-                return;
-            end
-        end
-    end
-    
-    if task_index > NT        
+
+function bfs(services, task_index, path, NT, NP)
+    if task_index > NT
         global bestQoS;
-        global bestRt;
-        global bestPath;
-        if current_qos > bestQoS
-            bestQoS  = current_qos;
+        fit = getFit(services, path);
+        if fit < bestQoS
+            bestQoS = fit;
+            global bestPath;
             bestPath = path;
-            bestRt   = current_rt;
         end
         return;
     end
-    
+
+    global currentBest;
     for i=1:NP
-        current_qos = current_qos + services{task_index}{i}.qos;
-        current_rt  = current_rt + services{task_index}{i}.rt;
-        if current_rt > 1000
-            return;
+        current_path = [path, i];
+        qos = getFit(services, current_path);
+        if currentBest(task_index) > qos
+            currentBest(task_index) = qos;
+            bfs(services, task_index+1, current_path, NT, NP)
         end
-        back(task_index + 1, current_qos, current_rt, [path, ' ', num2str(i)], NT, NP);
-        current_qos = current_qos - services{task_index}{i}.qos;
-        current_rt  = current_rt - services{task_index}{i}.rt;
     end
+end
+
+function qos = getFit(services, path)
+    rt   = 0;
+    ava  = 1;
+    for i=1:numel(path)
+        rt = rt + services{i}{path(i)}.rt;
+        ava = ava * services{i}{path(i)}.ava;
+    end
+    
+    qos = 0.5 * rt + 0.5 * (1 - ava);
 end
