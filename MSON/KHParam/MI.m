@@ -6,26 +6,35 @@ function MI()
 
     % setup
     [KH_profile, GA_profile, PSO_profile] = ParamSetUp();
-    KH_profile.NR = 10;
+    KH_profile.NR = 20;
     from     = 1;
     to       = 200;
     interval = 2;
 
     % experiment
+    [optimal, opt_time] = getOpt(KH_profile);
+    
     index =1;
     for i=from:interval:to
         KH_profile.MI = i;               % NK equal PS
         KH_res = KH(KH_profile);
-        y(index) = KH_res.MeanEvo(end);
+        y1(index) = KH_res.MeanEvo(end);
         index = index + 1;
     end
 
     x = from:interval:to;
+    y2 = optimal./y1;
+    
+    save('MI-1-2-200', 'x', 'y1', 'y2');
+    
     figure();
-    plot(x, y, '-o');
+    [hAx,hLine1,hLine2] = plotyy(x, y1, x, y2);
     grid on
-    xlabel('The size of maximum iteration');
-    ylabel('The average Fitness');
+    title('Impact of maximum iteration');
+    xlabel('The number of maximum iteration');
+    
+    ylabel(hAx(1),'The average Fitness') % left y-axis 
+    ylabel(hAx(2),'Optimality') % right y-axis    
 end
     
 

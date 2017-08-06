@@ -11,7 +11,7 @@ function MSON
     KH_profile.Providers = 20;
     
     % experiment;
-    [optimal, opt_time] = getOpt(KH_profile);
+    [optimal, opt_time] = getOpt(KH_profile); % 3.02145
     KH_res = KH(KH_profile);
     KH_res.Time
     KH_res.Mean

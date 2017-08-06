@@ -191,14 +191,14 @@ end
 function [ns]=findlimits(ns,Lb,Ub,best)
     n=size(ns,1);
     for i=1:n
-        ns_tmp=ns(i,:);
-        I=ns_tmp<Lb;
-        J=ns_tmp>Ub;
+        ns_tmp = ns(i,:);
+        I = ns_tmp < Lb;
+        J = ns_tmp > Ub;
         A=rand;
-        ns_tmp(I)=A*Lb(I)+(1-A)*best(I);
+        ns_tmp(I) = A*Lb(I) + (1-A)*best(I);
         B=rand;
-        ns_tmp(J)=B*Ub(J)+(1-B)*best(J);
-      ns(i,:)=ns_tmp;
+        ns_tmp(J) = B*Ub(J) + (1-B)*best(J);
+        ns(i,:) = ns_tmp;
     end
 end
 

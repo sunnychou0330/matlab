@@ -10,7 +10,7 @@ function f=fitness(X, services, NT)
 
     for i=1:NT
         ind = round(X(i));
-        if ind == 0
+        if ind <= 0
             ind = 1;
         end
         index(i) = ind;
@@ -19,8 +19,16 @@ function f=fitness(X, services, NT)
     % all sequence
     rt = 0; ava = 1;
     for i=1:NT
-        rt  = rt + services{i}{index(i)}.rt;
-        ava = ava * services{i}{index(i)}.ava;
+        try
+            rt  = rt + services{i}{index(i)}.rt;
+            ava = ava * services{i}{index(i)}.ava;
+        catch
+            i
+            index(i)
+            rt
+            services{i}{index(i)}.rt
+            exit
+        end        
     end
     
     % qos = ava / rt; positive
