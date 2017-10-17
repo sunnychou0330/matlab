@@ -8,7 +8,7 @@
 % Vf       is the foraging speed
 % Dmax     is the maximum diffusion speed
 % Nmax     is the maximum induced speed
-function result = KH(profile)
+function result = KH_Ava(profile)
 
     %% setup
     NR       = profile.NR;
@@ -50,7 +50,7 @@ function result = KH(profile)
         end
 
         for z2 = 1:NK
-            [K(z2), responseTime, providers]=fitness(X(:,z2), services, NT);
+            [K(z2), responseTime]=fitnessAva(X(:,z2), services, NT);
         end
 
         Kib=K;
@@ -66,7 +66,7 @@ function result = KH(profile)
             end
             Xf(:,j) = Sf./(sum(1./K)); %Food Location       
             Xf(:,j) =findlimits(Xf(:,j)',LB,UB,Xgb(:,j,nr)');% Bounds Checking
-            [Kf(j), responseTime, providers] = fitness(Xf(:,j), services, NT);
+            [Kf(j), responseTime] = fitnessAva(Xf(:,j), services, NT);
             if 2<=j
                 if Kf(j-1)<Kf(j)
                     Xf(:,j) = Xf(:,j-1);
@@ -149,7 +149,7 @@ function result = KH(profile)
                 % X(:,i)=X(:,NK4Cr).*(1-Cr)+X(:,i).*Cr;
                 offspring = Xgb(:,j,nr).*(1-Cr)+X(:,i).*Cr;
                 % offspring = Xgb(:,j,nr).*(1-Cr)+X(:,NK4Cr).*Cr;
-                [offspring_fit, responseTime, providers] = fitness(offspring, services, NT);
+                [offspring_fit, responseTime] = fitnessAva(offspring, services, NT);
                 
                 % we improved KH algrithm to SKH, for more detiles see
                 % Wang, G., Gandomi, A. H., & Alavi, A. H. (2013). Stud krill herd algorithm. *Neurocomputing*,
@@ -161,7 +161,7 @@ function result = KH(profile)
                     X(:,i)=findlimits(X(:,i)',LB,UB,Xgb(:,j,nr)'); % Bounds Checking
                 end            
 
-                [K(i), responseTime, providers] = fitness(X(:,i), services, NT);
+                [K(i), responseTime] = fitnessAva(X(:,i), services, NT);
                 if K(i)<Kib(i)
                     Kib(i)=K(i);
                     Xib(:,i)=X(:,i);
@@ -174,15 +174,15 @@ function result = KH(profile)
             if Kgb(j+1,nr) < Kgb(j,nr)
                 Xgb(:,j+1,nr) = X(:,A);
                 
-                [useless, responseTime, providers] = fitness(X(:,A), services, NT);
+                [useless, responseTime, providers] = fitnessAva(X(:,A), services, NT);
                 ResponseTime(nr) = responseTime;
                 ProviderName(nr,:) = providers;
             else
                 Kgb(j+1,nr) = Kgb(j,nr);
                 Xgb(:,j+1,nr) = Xgb(:,j,nr);
                 
-                [useless, responseTime, providers] = fitness(Xgb(:,j,nr), services, NT);
-                ResponseTime(nr) = responseTime;                
+                [useless, responseTime, providers] = fitnessAva(Xgb(:,j,nr), services, NT);
+                ResponseTime(nr) = responseTime;
                 ProviderName(nr,:) = providers;
             end
         end
@@ -201,6 +201,7 @@ function result = KH(profile)
     result.MeanEvo = mean(Kgb');
     result.ResponseTimeForEachRun = ResponseTime;
     % Xgb(:, j+1, nr) is the best solution for each run
+    % result.Solutions(:,:,1) ~ result.Solutions(:,:,20)
     result.Solutions    = getSolutions(Xgb(:, j+1, :));
     result.ProviderName = ProviderName;
 end
@@ -234,6 +235,9 @@ function index = rouletteWheelSelection(fitnesses, NK)
     end
 end
 
+
+
+
 function S = getSolutions(S)
     [NT, useless, Runs] = size(S);
     for i=1:Runs
@@ -251,7 +255,8 @@ function S = getSolutions(S)
     end
 end
 
-function [f, rt, providers]=fitness(X, services, NT)
+function [f, rt, providers]=fitnessAva(X, services, NT)
+    
     for i=1:NT
         ind = round(X(i));
         if ind <= 0
@@ -265,9 +270,10 @@ function [f, rt, providers]=fitness(X, services, NT)
     
     % sequence
     if NT == 10
-        rtn = 0; rt = 0; providers = [];
+        rtn = 0; ava = 1; rt = 0; providers = [];
         for i=1:NT
             rtn       = rtn + services{i}{index(i)}.rtn;
+            ava       = ava + services{i}{index(i)}.ava;
             rt        = rt + services{i}{index(i)}.rt;
             providers = [providers, services{i}{index(i)}.ProviderName];
         end
@@ -275,52 +281,60 @@ function [f, rt, providers]=fitness(X, services, NT)
 
     % Tasks = 6
     if NT == 6
-       rtn = []; rt = []; providers = [];
+       rtn = []; ava = []; rt = []; providers = [];
         for i=1:NT
             rtn       = [rtn, services{i}{index(i)}.rtn];
+            ava       = [ava, services{i}{index(i)}.ava];
             rt        = [rt, services{i}{index(i)}.rt];
             providers = [providers, services{i}{index(i)}.ProviderName];
         end
         T   = max(rt(1), rt(2)+rt(3)) + rt(4) + (rt(5) + rt(6)) * 0.5;
         Tn  = max(rtn(1), rtn(2)+rtn(3)) + rtn(4) + (rtn(5) + rtn(6)) * 0.5;
-        f   = Tn/3;
+        Ava = max(ava(1), (ava(2)+ava(3)) / 2) + ava(4) + (ava(5) + ava(6)) * 0.5;
+        f   = 0.9 * (Tn/3) + 0.1 * (1 - ava/3);
         rt  = T;
     end
 
     % Tasks = 12
     if NT == 12
-       rtn = []; rt = []; providers = [];
+       rtn = []; ava = []; rt = []; providers = [];
         for i=1:NT
             rtn       = [rtn, services{i}{index(i)}.rtn];
+            ava       = [ava, services{i}{index(i)}.ava];
             rt        = [rt, services{i}{index(i)}.rt];
             providers = [providers, services{i}{index(i)}.ProviderName];
         end
 
         T   = max(rt) * 2;
-        Tn  = max(rtn) * 2;        
-        f   = Tn / 2;
+        Tn  = max(rtn) * 2;
+        Ava = sum(ava) * 2 / NT;
+        f   = 0.9 * Tn / 2 + 0.1 * (1 - ava);
         rt  = T;
     end
 
     % Tasks = 24
     if NT == 24
-       rtn = []; rt = []; providers = [];
+       rtn = []; ava = []; rt = []; providers = [];
         for i=1:NT
             rtn       = [rtn, services{i}{index(i)}.rtn];
+            ava       = [ava, services{i}{index(i)}.ava];
             rt        = [rt, services{i}{index(i)}.rt];
             providers = [providers, services{i}{index(i)}.ProviderName];
         end
 
-        T   = max([ rt(1),rt(2),rt(3),rt(4) ]) + max([ rt(5),rt(6),rt(7),rt(8),rt(9),rt(10) ]) + rt(11) + rt(12) + max([ rt(13),rt(14),rt(15),rt(16) ]) + max([ rt(17)+rt(19)+rt(21), rt(18)+rt(19)+rt(22) ]) + rt(23) + rt(24);
-        Tn  = max([ rtn(1),rtn(2),rtn(3),rtn(4) ]) + max([ rtn(5),rtn(6),rtn(7),rtn(8),rtn(9),rtn(10) ]) + rtn(11) + rtn(12) + max([ rtn(13),rtn(14),rtn(15),rtn(16)] ) + max([ rtn(17)+rtn(19)+rtn(21), rtn(18)+rtn(19)+rtn(22)] ) + rtn(23) + rtn(24);  
-        f   = Tn / 10;
+        T   = max(rt(1),rt(2),rt(3),rt(4)) + max(rt(5),rt(6),rt(7),rt(8),rt(9),rt(10)) + rt(11) + rt(12) + max(rt(13),rt(14)rt(15),rt(16)) + max(rt(17)+rt(19)+rt(21), rt(18)+rt(19)+rt(22)) + rt(23) + rt(24);
+        Tn  = max(rtn(1),rtn(2),rtn(3),rtn(4)) + max(rtn(5),rtn(6),rtn(7),rtn(8),rtn(9),rtn(10)) + rtn(11) + rtn(12) + max(rtn(13),rtn(14)rtn(15),rtn(16)) + max(rtn(17)+rtn(19)+rtn(21), rtn(18)+rtn(19)+rtn(22)) + rtn(23) + rtn(24);  
+        Ava = sum(ava) / NT;
+        f   = 0.9 * Tn / 10 + 0.1 * (1 - ava);
         rt  = T;
     end
            
     % Response Time     Weight: 30%
     % Service Available Weight: 70%
     % Fitness value f: more small more better
-    % f = 0.9 * (rtn/NT) + 0.1 * (1 - ava/NT);
+    f = 0.9 * (rtn/NT) + 0.1 * (1 - ava/NT);
+
 end
+
 
     

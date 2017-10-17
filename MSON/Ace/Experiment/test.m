@@ -1,4 +1,4 @@
-function Optimality(tasks, judge, filename)
+function test(tasks, judge)
 
     addpath('../KH', '../KH_Ava', '../Data');
     KHres  = [];
@@ -8,7 +8,7 @@ function Optimality(tasks, judge, filename)
     f1 = [];
     f2 = [];
     
-    for i=6:50
+    for i=25:25
         [KH_profile, GA_profile, PSO_profile] = ParamSetUp();
         
         % KH_profile.datafile   = 'Data/t1-providers-12-tasks-25.mat';
@@ -30,12 +30,10 @@ function Optimality(tasks, judge, filename)
         % KH_res.BestEvo = 1./KH_res.BestEvo;
         % KH_res.MeanEvo = 1./KH_res.MeanEvo';
         % KHres = [KHres, 1/KH_res.MeanEvo(end)]
-        t1 = [t1, mean(KH_res_ava.ResponseTimeForEachRun)];
-        t2 = [t2, mean(KH_res.ResponseTimeForEachRun)];
-        [a, b] = veryfiSuccess(KH_res_ava, KH_res, KH_profile.NR, KH_profile.Tasks, 5, judge);
-        f1 = [f1, a]; f2 = [f2, b];
-    end
-    save(filename, 't1', 't2', 'f1', 'f2');
+        t1 = [t1, mean(KH_res_ava.ResponseTimeForEachRun)]
+        t2 = [t2, mean(KH_res.ResponseTimeForEachRun)]
+        [a, b] = veryfiSuccess(KH_res_ava, KH_res, KH_profile.NR, KH_profile.Tasks, 5, judge)
+    end    
 end
 
 function [f_ava, f] = veryfiSuccess(KH_res_ava, KH_res, NR, NT, time, judge)
@@ -44,12 +42,16 @@ function [f_ava, f] = veryfiSuccess(KH_res_ava, KH_res, NR, NT, time, judge)
     failure = 0;
     
     for i=1:NR
+        taskFail = 0;
         for j=1:NT
             provider = KH_res_ava.ProviderName(i,j);
             if m(time,provider) == 0
-                failure_ava = failure_ava + 1;
-                break;
+                taskFail = taskFail + 1;
             end
+        end
+        % 2 3 5
+        if taskFail > judge
+            failure_ava = failure_ava + 1;
         end
     end
     

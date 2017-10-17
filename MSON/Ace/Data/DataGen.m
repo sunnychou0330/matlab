@@ -6,12 +6,12 @@ function DataGen(t)
 
     time   = t;        % Time Point
     timeUp = 8;
-    NP     = 30;      % Number of mobile service provider
+    NP     = 94;      % Number of mobile service provider
     NT     = 25;       % Number of Tasks
     TP     = 0;        % Probability of service
     
     % round(rand(1, 25) * 950)
-    services = [659   898   745   670   104   370   561   436    48   217   792    15   821    74   636   475   207 543   116   638   570    53    54   145    19];
+    services = [436   155   152   765   362   913   656   213    63   919   214   130   268   754   562    55   386   783 316   712   599   252   281   513   544];
     
     for i=1:NT        
         CandidateService(i,:) = data{services(i)};
