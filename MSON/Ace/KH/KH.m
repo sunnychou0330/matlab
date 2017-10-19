@@ -296,8 +296,8 @@ function [f, rt, providers]=fitness(X, services, NT)
             providers = [providers, services{i}{index(i)}.ProviderName];
         end
 
-        T   = max(rt) * 2;
-        Tn  = max(rtn) * 2;        
+        T   = sum(rt) * 2;
+        Tn  = sum(rtn) * 2;        
         f   = Tn / 2;
         rt  = T;
     end

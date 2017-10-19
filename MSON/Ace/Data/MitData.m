@@ -100,4 +100,16 @@ for j=1:numel(t8)
     m(8, t8) = 1;
 end
 
+
+[rows, cols] = size(m);
+index = [1:cols];
+
+index= index(randperm(length(index)));
+
+for i=1:length(index)
+    newm(:,i) = m(:,index(i));
+end
+
+m = newm;
+
 save('MIT', 'm');

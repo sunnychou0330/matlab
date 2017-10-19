@@ -21,6 +21,9 @@ function result = KH_Ava(profile)
     datafile = profile.datafile;
     NT       = profile.Tasks;
     NP       = profile.Providers;
+    w1       = profile.w1;    
+    w2       = profile.w2;
+    
     load(datafile);
 
     % Bounds (Normalize search space in case of highly imbalanced search space)
@@ -50,7 +53,7 @@ function result = KH_Ava(profile)
         end
 
         for z2 = 1:NK
-            [K(z2), responseTime, providers]=fitnessAva(X(:,z2), services, NT);
+            [K(z2), responseTime, providers]=fitnessAva(X(:,z2), services, NT, w1, w2);
         end
 
         Kib=K;
@@ -66,7 +69,7 @@ function result = KH_Ava(profile)
             end
             Xf(:,j) = Sf./(sum(1./K)); %Food Location       
             Xf(:,j) =findlimits(Xf(:,j)',LB,UB,Xgb(:,j,nr)');% Bounds Checking
-            [Kf(j), responseTime, providers] = fitnessAva(Xf(:,j), services, NT);
+            [Kf(j), responseTime, providers] = fitnessAva(Xf(:,j), services, NT, w1, w2);
             if 2<=j
                 if Kf(j-1)<Kf(j)
                     Xf(:,j) = Xf(:,j-1);
@@ -149,7 +152,7 @@ function result = KH_Ava(profile)
                 % X(:,i)=X(:,NK4Cr).*(1-Cr)+X(:,i).*Cr;
                 offspring = Xgb(:,j,nr).*(1-Cr)+X(:,i).*Cr;
                 % offspring = Xgb(:,j,nr).*(1-Cr)+X(:,NK4Cr).*Cr;
-                [offspring_fit, responseTime, providers] = fitnessAva(offspring, services, NT);
+                [offspring_fit, responseTime, providers] = fitnessAva(offspring, services, NT, w1, w2);
                 
                 % we improved KH algrithm to SKH, for more detiles see
                 % Wang, G., Gandomi, A. H., & Alavi, A. H. (2013). Stud krill herd algorithm. *Neurocomputing*,
@@ -161,7 +164,7 @@ function result = KH_Ava(profile)
                     X(:,i)=findlimits(X(:,i)',LB,UB,Xgb(:,j,nr)'); % Bounds Checking
                 end            
 
-                [K(i), responseTime, providers] = fitnessAva(X(:,i), services, NT);
+                [K(i), responseTime, providers] = fitnessAva(X(:,i), services, NT, w1, w2);
                 if K(i)<Kib(i)
                     Kib(i)=K(i);
                     Xib(:,i)=X(:,i);
@@ -174,14 +177,14 @@ function result = KH_Ava(profile)
             if Kgb(j+1,nr) < Kgb(j,nr)
                 Xgb(:,j+1,nr) = X(:,A);
                 
-                [useless, responseTime, providers] = fitnessAva(X(:,A), services, NT);
+                [useless, responseTime, providers] = fitnessAva(X(:,A), services, NT, w1, w2);
                 ResponseTime(nr) = responseTime;
                 ProviderName(nr,:) = providers;
             else
                 Kgb(j+1,nr) = Kgb(j,nr);
                 Xgb(:,j+1,nr) = Xgb(:,j,nr);
                 
-                [useless, responseTime, providers] = fitnessAva(Xgb(:,j,nr), services, NT);
+                [useless, responseTime, providers] = fitnessAva(Xgb(:,j,nr), services, NT, w1, w2);
                 ResponseTime(nr) = responseTime;
                 ProviderName(nr,:) = providers;
             end
@@ -253,9 +256,7 @@ function S = getSolutions(S)
 end
 
 
-function [f, rt, providers]=fitnessAva(X, services, NT)
-    
-    w1 = 0.9; w2 = 0.1;
+function [f, rt, providers]=fitnessAva(X, services, NT, w1, w2)
 
     for i=1:NT
         ind = round(X(i));
@@ -305,9 +306,9 @@ function [f, rt, providers]=fitnessAva(X, services, NT)
             providers = [providers, services{i}{index(i)}.ProviderName];
         end
 
-        T   = max(rt) * 2;
-        Tn  = max(rtn) * 2;
-        Ava = sum(ava) * 2 / NT;
+        T   = sum(rt) * 2;
+        Tn  = sum(rtn) * 2;
+        Ava = sum(ava) / NT;
         f   = w1 * Tn / 2 + w2 * (1 - Ava);
         rt  = T;
     end

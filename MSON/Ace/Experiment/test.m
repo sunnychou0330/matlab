@@ -1,4 +1,4 @@
-function test(tasks, judge)
+function test(tasks, judge_ava, judge, w1, w2)
 
     addpath('../KH', '../KH_Ava', '../Data');
     KHres  = [];
@@ -20,9 +20,11 @@ function test(tasks, judge)
         % KH_profile.datafile   = 'Data/t7-providers-13-tasks-25.mat';
         % KH_profile.datafile   = 'Data/t8-providers-16-tasks-25.mat';
         
-        KH_profile.NR         = 30;
+        KH_profile.NR         = 100;
         % KH_profile.Providers  = 50;
         KH_profile.Tasks      = tasks;
+        KH_profile.w1         = w1;
+        KH_profile.w2         = w2;
         
         KH_res_ava = KH_Ava(KH_profile);
         KH_res     = KH(KH_profile);
@@ -32,11 +34,13 @@ function test(tasks, judge)
         % KHres = [KHres, 1/KH_res.MeanEvo(end)]
         t1 = [t1, mean(KH_res_ava.ResponseTimeForEachRun)]
         t2 = [t2, mean(KH_res.ResponseTimeForEachRun)]
-        [a, b] = veryfiSuccess(KH_res_ava, KH_res, KH_profile.NR, KH_profile.Tasks, 5, judge)
+        [a, b] = veryfiSuccess(KH_res_ava, KH_res, KH_profile.NR, KH_profile.Tasks, 5, judge_ava, judge);
+        1-a
+        1-b
     end    
 end
 
-function [f_ava, f] = veryfiSuccess(KH_res_ava, KH_res, NR, NT, time, judge)
+function [f_ava, f] = veryfiSuccess(KH_res_ava, KH_res, NR, NT, time, judge_ava, judge)
     load('Data/MIT.mat');
     failure_ava = 0;
     failure = 0;
@@ -50,7 +54,7 @@ function [f_ava, f] = veryfiSuccess(KH_res_ava, KH_res, NR, NT, time, judge)
             end
         end
         % 2 3 5
-        if taskFail > judge
+        if taskFail > judge_ava
             failure_ava = failure_ava + 1;
         end
     end
